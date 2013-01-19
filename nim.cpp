@@ -14,6 +14,7 @@
 #include <FL/glut.h>
 #include <iostream>
 #include <vector>
+#include <algorithm>
 #include <time.h>
 
 static const int MAX_SLOTS = 12;
@@ -57,7 +58,7 @@ private:
 	int m_y;
 	int m_slot;
 	int m_pile;
-	bool bGLInit;
+	bool m_bGLInit;
 public:
 	GLfloat m_color[4];
 	void setColor(const GLfloat color[4]) { m_color[3] = color[3];
@@ -73,16 +74,13 @@ public:
 	}
 public:
 	void initGL() {
-		bGLInit = true;
+		m_bGLInit = true;
 	}
 
 	void draw() {
-		GLenum errCode;
-		const GLubyte *errString;
-
 		//std::cout << "gl draw\n" << std::flush;
 		
-		if (!bGLInit) {
+		if (!m_bGLInit) {
 			initGL();
 		}
 
@@ -113,7 +111,7 @@ public:
 
 public:
 	CBox(int l, int t, int w, int h, const GLfloat color[4]) {
-		bGLInit = false;
+		m_bGLInit = false;
 		m_x = l;
 		m_y = t;
 		m_w = w;
@@ -133,10 +131,10 @@ public:
 // OPENGL WINDOW CLASS
 class MyGlWindow : public Fl_Gl_Window {
 public:
-	int startX;
-	int startY;
-	int width;
-	int height;
+	int m_startX;
+	int m_startY;
+	int m_width;
+	int m_height;
     int m_numPiles;
 	int m_maxMatchSticksPerPile;
 	typedef std::vector<CBox*> Pile1d;
@@ -150,7 +148,7 @@ public:
 public:
 	void output(int x, int y, float r, float g, float b, char *string) {
 		glColor3f( r, g, b );
-		glRasterPos2f(x, y);
+		glRasterPos2i(x, y);
 		int len, i;
 		len = (int)strlen(string);
 		for (i = 0; i < len; i++) {
@@ -210,7 +208,7 @@ public:
 		itr2d = m_piles.begin();
 		while ( itr2d != m_piles.end()) {
 			if (!(*itr2d).empty()) {
-				if ((*itr2d).size() < minNonEmptyPile) {
+				if ((*itr2d).size() < (std::vector<Pile1d>::size_type)minNonEmptyPile) {
 					minNonEmptyPile = (*itr2d).size();
 				}
 			}
@@ -257,14 +255,7 @@ public:
 				// Must take at least one
 				numTaken = (rand() % m_piles[pileTakenFrom].size()) + 1;
 				removeSticks(pileTakenFrom, m_piles[pileTakenFrom].size()-numTaken, false);
-				return false;
 			}
-			else {
-				numTaken = 0;
-				pileTakenFrom = -1;
-				return true;
-			}
-			
 		}
 		else { 
 			// else Computer wins!
@@ -280,10 +271,10 @@ public:
 					itr2d = m_piles.begin();
 					while ( itr2d != m_piles.end()) {
 						if (!(*itr2d).empty()) {
-							removeSticks(pile, 0, false);
 							pileTakenFrom = pile;
 							numTaken = (*itr2d).size();
-							return true;
+							removeSticks(pile, 0, false);
+							break;
 						}
 						pile++;
 						++itr2d;
@@ -296,11 +287,11 @@ public:
 					pile = 0;
 					itr2d = m_piles.begin();
 					while ( itr2d != m_piles.end()) {
-						if (!(*itr2d).empty() && (minNonEmptyPile < (*itr2d).size())) {
-							removeSticks(pile, minNonEmptyPile, false);
+						if (!(*itr2d).empty() && ((std::vector<Pile1d>::size_type)minNonEmptyPile < (*itr2d).size())) {
 							pileTakenFrom = pile;
 							numTaken = (*itr2d).size()-minNonEmptyPile;
-							return false;
+							removeSticks(pile, minNonEmptyPile, false);
+							break;
 						}
 						pile++;
 						++itr2d;
@@ -316,11 +307,11 @@ public:
 					while ( itr2d != m_piles.end()) {
 						if (!(*itr2d).empty()) {
 							nimPileValue = nimValue ^ (*itr2d).size();
-							if (nimPileValue < (*itr2d).size()) {
+							if ((std::vector<Pile1d>::size_type)nimPileValue < (*itr2d).size()) {
+								pileTakenFrom = pile;
 								numTaken = (*itr2d).size()-nimPileValue;
 								removeSticks(pile, nimPileValue, false);
-								pileTakenFrom = pile;
-								return false;
+								break;
 							}
 						}
 						++itr2d;
@@ -330,14 +321,11 @@ public:
 				}
 			case 3:
 				{
-					numTaken = 0;
-					pileTakenFrom = -1;
-					return true;
+					break;
 				}
 			default:
 				{
 					std::cout << "Error\n" << std::flush; 
-					return true;
 					break;
 				}
 			}
@@ -356,8 +344,8 @@ public:
 	
 	void initSticks() {
 		int x, y;
-		x = startX;
-		y = startY;
+		x = m_startX;
+		y = m_startY;
 		int numSticks[3];
 		for (int i = 0; i < m_numPiles; i++) {
 			numSticks[i] = m_maxMatchSticksPerPile;
@@ -367,14 +355,14 @@ public:
 			m_piles.push_back( Pile1d() );
 			m_removedPiles.push_back( Pile1d() );
 			for (int j = 0; j < numSticks[i]; j++) {
-				CBox *imageBox = new CBox(x,y,width,height, unusedColor);
+				CBox *imageBox = new CBox(x,y,m_width,m_height, unusedColor);
 				imageBox->setSlot(j);
 				imageBox->setPile(i);
 				m_unusedPiles[i].push_back( imageBox );
-				x += width;
+				x += m_width;
 			}
 			x = 40;
-			y += height;
+			y += m_height;
 		}
 		redraw();
 	}
@@ -396,12 +384,12 @@ public:
 				numSticks[i] = m_startPileCount[i];
 			}
 		}
-		numSticks[0] = 1;
-		numSticks[1] = 2;
-		numSticks[2] = 4;
-		m_startPileCount[0] = 1;
-		m_startPileCount[1] = 2;
-		m_startPileCount[2] = 4;
+		//numSticks[0] = 1;
+		//numSticks[1] = 2;
+		//numSticks[2] = 4;
+		//m_startPileCount[0] = 1;
+		//m_startPileCount[1] = 2;
+		//m_startPileCount[2] = 4;
 
 		Pile1d::iterator itr1d;
 		Pile2d::iterator itr2d;
@@ -456,16 +444,17 @@ public:
 		}
 	}
 	
+	// removes entries until the number of remaining entries = slot
 	int removeSticks(int pile, int slot, bool bPlayersTurn) {
 		int numRemoved = 0;
-		if ((pile >= 0) && (pile < m_piles.size())) {
+		if ((pile >= 0) && ((std::vector<Pile1d>::size_type)pile < m_piles.size())) {
 			if (slot >= 0) {
 				Pile2d::iterator itr;
 				itr = m_piles.begin();
 				for (int i = 0; i < pile; i++) {
 					++itr;
 				}
-				while (slot < (*itr).size()) {
+				while ((std::vector<Pile1d>::size_type)slot < (*itr).size()) {
 					CBox* matchstick = (*itr).back();
 					if (bPlayersTurn) {
 						matchstick->setColor(playerColor);
@@ -477,8 +466,8 @@ public:
 					//delete matchstick;
 					(*itr).pop_back( );
 					numRemoved++;
-					redraw();
 				}
+				redraw();
 			}
 		}
 		return(numRemoved);
@@ -577,14 +566,11 @@ public:
 
 		glutInitDisplayMode(GLUT_RGBA);
 
-		GLenum errCode;
-		const GLubyte *errString;
+		m_width = 32;
+		m_height = 32;
 
-		width = 32;
-		height = 32;
-
-		startX = 40;
-		startY = 10;
+		m_startX = 40;
+		m_startY = 10;
 		
 		srand( time(NULL) );
 
@@ -603,13 +589,14 @@ public:
 // APP WINDOW CLASS
 class MyAppWindow : public Fl_Window {
 private:
-	MyGlWindow *mygl; 
-	CButton* buttonNewGame;
-	CButton* buttonQuit;
-	CButton* buttonRestart;
+	MyGlWindow *m_mygl;
+	CButton* m_buttonNewGame;
+	CButton* m_buttonQuit;
+	CButton* m_buttonRestart;
     int m_numPiles;
 	int m_maxMatchSticksPerPile;
-	bool bPlayerTurn;
+	bool m_bPlayerTurn;
+	bool m_bInitOK;
 
 protected:
 	static void closeWindow_cb (Fl_Widget* o, void* v) {
@@ -624,13 +611,15 @@ protected:
 	}
 	void newGame () {
 		std::cout << "New game.\n\n" << std::flush;
-		mygl->removeAllSticks();
-		mygl->reinitSticks(true);
+		m_bPlayerTurn = true;
+		m_mygl->removeAllSticks();
+		m_mygl->reinitSticks(true);
 	}
 	void restart () {
 		std::cout << "Restart game.\n\n" << std::flush;
-		mygl->removeAllSticks();
-		mygl->reinitSticks(false);
+		m_bPlayerTurn = true;
+		m_mygl->removeAllSticks();
+		m_mygl->reinitSticks(false);
 	}
 
 public:
@@ -640,51 +629,79 @@ public:
 
 	// APP WINDOW CONSTRUCTOR
     MyAppWindow(int W,int H,const char*L=0) : Fl_Window(W,H,L) {
-		bPlayerTurn = true;
+		m_bInitOK = true;
+		m_bPlayerTurn = true;
 
 		// OpenGL window
-        mygl = new MyGlWindow(0, 0, 500, 242);
+        m_mygl = new MyGlWindow(0, 0, 500, 242);
+		if (m_mygl == NULL) {
+			m_bInitOK = false;
+		}
 
-		buttonNewGame = new CButton(160, 260, 80, 25, "New Game", CButton::NewGame);
-		buttonQuit = new CButton(260, 260, 80, 25, "Quit", CButton::Quit);
-		buttonRestart = new CButton(360, 260, 80, 25, "Restart", CButton::Restart);
-
-		buttonQuit->callback(&MyAppWindow::closeWindow_cb, this);
-		buttonQuit->when(FL_WHEN_RELEASE); // The callback is done after user successfully clicks button, or when shortcut is typed.
-		buttonNewGame->callback(&MyAppWindow::newGame_cb, this);
-		buttonNewGame->when(FL_WHEN_RELEASE); // The callback is done after user successfully clicks button, or when shortcut is typed.
-		buttonRestart->callback(&MyAppWindow::restart_cb, this);
-		buttonRestart->when(FL_WHEN_RELEASE); // The callback is done after user successfully clicks button, or when shortcut is typed.
+		m_buttonNewGame = new CButton(160, 260, 80, 25, "New Game", CButton::NewGame);
+		if (m_buttonNewGame == NULL) {
+			m_bInitOK = false;
+		}
+		else {
+			m_buttonNewGame->callback(&MyAppWindow::newGame_cb, this);
+			// The callback performed after user clicks button, or when shortcut is typed.
+			m_buttonNewGame->when(FL_WHEN_RELEASE);
+		}
+		
+		
+		m_buttonQuit = new CButton(260, 260, 80, 25, "Quit", CButton::Quit);
+		if (m_buttonQuit == NULL) {
+			m_bInitOK = false;
+		}
+		else {
+			m_buttonQuit->callback(&MyAppWindow::closeWindow_cb, this);
+			// The callback performed after user clicks button, or when shortcut is typed.
+			m_buttonQuit->when(FL_WHEN_RELEASE);
+		}
+		
+		m_buttonRestart = new CButton(360, 260, 80, 25, "Restart", CButton::Restart);
+		if (m_buttonRestart == NULL) {
+			m_bInitOK = false;
+		}
+		else {
+			m_buttonRestart->callback(&MyAppWindow::restart_cb, this);
+			// The callback performed after user clicks button, or when shortcut is typed.
+			m_buttonRestart->when(FL_WHEN_RELEASE);
+		}
 
         end();
 
-		std::cout << "Window created.\n" << std::flush;
+		if (m_bInitOK) {
+			std::cout << "Window created.\n" << std::flush;
+		}
     }
+
+	bool initOK() {
+		return(m_bInitOK);
+	}
 
 	int handle(int e) {
 		static int offset[2] = { 0, 0 };
         int ret = Fl_Window::handle(e);
         switch ( e ) {
 		case FL_PUSH:
-			bool bGameOver = mygl->isGameOver();
-			if (bPlayerTurn && !bGameOver) {
+			bool bGameOver = m_mygl->isGameOver();
+			if (m_bPlayerTurn && !bGameOver) {
 				offset[0] = x() - Fl::event_x();    // save where user clicked for dragging
 				offset[1] = y() - Fl::event_y();
 				int x = Fl::event_x();
 				int y = Fl::event_y();
-				CBox* box = mygl->findHit(x, y);
+				CBox* box = m_mygl->findHit(x, y);
 				if (box != NULL) {
 					int rem;
 					int pile = box->getPile();
 					int slot = box->getSlot();
-					if ((rem = mygl->removeSticks(pile, slot, bPlayerTurn)) > 0) {
+					if ((rem = m_mygl->removeSticks(pile, slot, m_bPlayerTurn)) > 0) {
 						std::cout << "Player removed " << rem << " matchsticks from pile " << pile << ".\n" << std::flush;
-						bPlayerTurn = false;
+						m_bPlayerTurn = false;
 
 						// now do computer's turn
-						bGameOver = mygl->computerMove();
-						
-						bPlayerTurn = true;
+						m_bPlayerTurn =! m_mygl->computerMove();
 
 						redraw();
 						return(1);
@@ -699,7 +716,9 @@ public:
 int _tmain(int argc, _TCHAR* argv[])
 {
 	MyAppWindow win(500, 300, "Nim Master");
-    win.resizable(win);
-    win.show();
-	return(Fl::run());
+	if (win.initOK()) {
+		win.resizable(win);
+	 win.show();
+		return(Fl::run());
+	}
 }
