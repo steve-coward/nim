@@ -3,18 +3,10 @@
 
 #include "stdafx.h"
 #include <windows.h>
-#include <FL/Fl.H>
-#include <FL/Fl_Window.H>
-#include <FL/Fl_Box.H>
 #include <FL/Fl_Button.H>
-#include <FL/Fl_Value_Slider.H>
-#include <FL/Fl_Gl_Window.H>
-#include <FL/gl.h>
-#include <FL/glu.h>
 #include <FL/glut.h>
 #include <iostream>
 #include <vector>
-#include <algorithm>
 #include <time.h>
 
 static const int MAX_SLOTS = 12;
