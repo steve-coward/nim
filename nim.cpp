@@ -705,8 +705,6 @@ public:
 			free(texture.imageData);					// Free The Texture Image Memory ( CHANGE )
 		}
 
-		//m_jpg = new Fl_JPEG_Image("matchstick.jpg");
-
 		startX = 40;
 		startY = 10;
 		
