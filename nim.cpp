@@ -9,14 +9,12 @@
 #include <FL/Fl_Button.H>
 #include <FL/Fl_Value_Slider.H>
 #include <FL/Fl_Gl_Window.H>
-#include <FL/Fl_JPEG_Image.H>
 #include <FL/gl.h>
 #include <FL/glu.h>
 #include <FL/glut.h>
 #include <iostream>
 #include <vector>
 #include <time.h>
-#include "TGALoad.h"
 
 static const int MAX_SLOTS = 12;
 static const GLfloat startColor[4] = { 1.0f, 1.0f, 0.0f, 1.0f }; // yellow
@@ -59,8 +57,6 @@ private:
 	int m_y;
 	int m_slot;
 	int m_pile;
-	Fl_JPEG_Image* m_jpg;
-	GLuint m_texName;
 	bool bGLInit;
 public:
 	GLfloat m_color[4];
@@ -77,54 +73,6 @@ public:
 	}
 public:
 	void initGL() {
-/*		GLenum errCode;
-		const GLubyte *errString;
-		
-		//glEnable( GL_TEXTURE_2D );
-		if ((errCode = glGetError()) != GL_NO_ERROR) {
-			errString = gluErrorString(errCode);
-			std::cout <<  "OpenGL Error: (glEnable) " << errString << "\n" << std::flush;
-		}
-		else {
-			std::cout <<  "OpenGL OK: glEnable\n" << std::flush;
-		}
-		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-		if ((errCode = glGetError()) != GL_NO_ERROR) {
-			errString = gluErrorString(errCode);
-			std::cout <<  "OpenGL Error: (glTexParameterf) " << errString << "\n" << std::flush;
-		}
-		else {
-			std::cout <<  "OpenGL OK: glTexParameterf\n" << std::flush;
-		}
-		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-		if ((errCode = glGetError()) != GL_NO_ERROR) {
-			errString = gluErrorString(errCode);
-			std::cout <<  "OpenGL Error: (glTexParameterf) " << errString << "\n" << std::flush;
-		}
-		else {
-			std::cout <<  "OpenGL OK: glTexParameterf\n" << std::flush;
-		}
-
-		glGenTextures(1, &m_texName);
-		if ((errCode = glGetError()) != GL_NO_ERROR) {
-			errString = gluErrorString(errCode);
-			std::cout <<  "OpenGL Error: (glGenTextures) " << errString << "\n" << std::flush;
-		}
-		else {
-			std::cout <<  "OpenGL OK: glGenTextures\n" << std::flush;
-		}
-		if (m_jpg != NULL) {
-			glTexImage2D(GL_TEXTURE_2D, 0, 4, 32, 32, 0, GL_RGBA, GL_UNSIGNED_BYTE, m_jpg->data());
-		}
-		
-		if ((errCode = glGetError()) != GL_NO_ERROR) {
-			errString = gluErrorString(errCode);
-			std::cout <<  "OpenGL Error: (glTexImage2D) " << errString << "\n" << std::flush;
-		}
-		else {
-			std::cout <<  "OpenGL OK: glTexImage2D\n" << std::flush;
-		}
-*/
 		bGLInit = true;
 	}
 
@@ -137,44 +85,6 @@ public:
 		if (!bGLInit) {
 			initGL();
 		}
-
-		//Fl_Box::draw();
-		// widget that will contain image
-		//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		/*if ((errCode = glGetError()) != GL_NO_ERROR) {
-			errString = gluErrorString(errCode);
-			std::cout <<  "OpenGL Error: (glClear) " << errString << "\n" << std::flush;
-		}
-		else {
-			std::cout <<  "OpenGL OK: glClear\n" << std::flush;
-		}*/
-
-		//glEnable( GL_TEXTURE_2D );
-		/*if ((errCode = glGetError()) != GL_NO_ERROR) {
-			errString = gluErrorString(errCode);
-			std::cout <<  "OpenGL Error: (glEnable) " << errString << "\n" << std::flush;
-		}
-		else {
-			std::cout <<  "OpenGL OK: glEnable\n" << std::flush;
-		}*/
-
-		//glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_DECAL );
-		/*if ((errCode = glGetError()) != GL_NO_ERROR) {
-			errString = gluErrorString(errCode);
-			std::cout <<  "OpenGL Error: (glTexEnvf) " << errString << "\n" << std::flush;
-		}
-		else {
-			std::cout <<  "OpenGL OK: glTexEnvf\n" << std::flush;
-		}*/
-
-		//glBindTexture(GL_TEXTURE_2D, m_texName);
-		/*if ((errCode = glGetError()) != GL_NO_ERROR) {
-			errString = gluErrorString(errCode);
-			std::cout <<  "OpenGL Error: (glBindTexture) " << errString << "\n" << std::flush;
-		}
-		else {
-			std::cout <<  "OpenGL OK: glBindTexture\n" << std::flush;
-		}*/
 
 		glBegin(GL_POLYGON);
 		glColor4f(0.0f, 0.0f, 0.0f, 1.0f);
@@ -203,9 +113,6 @@ public:
 
 public:
 	CBox(int l, int t, int w, int h, const GLfloat color[4]) {
-		GLenum errCode;
-		const GLubyte *errString;
-
 		bGLInit = false;
 		m_x = l;
 		m_y = t;
@@ -215,7 +122,6 @@ public:
 		m_color[1] = color[1];
 		m_color[2] = color[2];
 		m_color[3] = color[3];
-		//m_jpg = new Fl_JPEG_Image("matchstick.jpg");
 	}
 
 	void setSlot(int slot) { m_slot = slot; }
@@ -240,7 +146,6 @@ public:
 	Pile2d m_removedPiles;
 	int* m_startPileCount;
 	bool m_bComputerWinning;
-	Texture texture;
 
 public:
 	void output(int x, int y, float r, float g, float b, char *string) {
@@ -674,36 +579,9 @@ public:
 
 		GLenum errCode;
 		const GLubyte *errString;
-		if (!LoadTGA(&texture, "matchstick.tga")) {
-			std::cout <<  "OpenGL Error: (LoadTGA)\n" << std::flush;
-		}
-		glGenTextures(1, &texture.texID);				// Create The Texture ( CHANGE )
-		if ((errCode = glGetError()) != GL_NO_ERROR) {
-			errString = gluErrorString(errCode);
-			std::cout <<  "OpenGL Error: (glGenTextures) " << errString << "\n" << std::flush;
-		}
-		else {
-			std::cout <<  "OpenGL OK: glGenTextures\n" << std::flush;
-		}
-		glBindTexture(GL_TEXTURE_2D, texture.texID);
-		if ((errCode = glGetError()) != GL_NO_ERROR) {
-			errString = gluErrorString(errCode);
-			std::cout <<  "OpenGL Error: (glBindTexture) " << errString << "\n" << std::flush;
-		}
-		else {
-			std::cout <<  "OpenGL OK: glBindTexture\n" << std::flush;
-		}
-		glTexImage2D(GL_TEXTURE_2D, 0, texture.bpp / 8, texture.width, texture.height, 0, texture.type, GL_UNSIGNED_BYTE, texture.imageData);
-		glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_LINEAR);
-		glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_LINEAR);
 
-		width = texture.width;
-		height = texture.height;
-
-		if (texture.imageData)						// If Texture Image Exists ( CHANGE )
-		{
-			free(texture.imageData);					// Free The Texture Image Memory ( CHANGE )
-		}
+		width = 32;
+		height = 32;
 
 		startX = 40;
 		startY = 10;
@@ -729,8 +607,6 @@ private:
 	CButton* buttonNewGame;
 	CButton* buttonQuit;
 	CButton* buttonRestart;
-	int startX;
-	int startY;
     int m_numPiles;
 	int m_maxMatchSticksPerPile;
 	bool bPlayerTurn;
@@ -767,13 +643,11 @@ public:
 		bPlayerTurn = true;
 
 		// OpenGL window
-		startX = 160;
-		startY = 10;
         mygl = new MyGlWindow(0, 0, 500, 242);
 
-		buttonNewGame = new CButton(startX, 260, 80, 25, "New Game", CButton::NewGame);
-		buttonQuit = new CButton(startX + 100, 260, 80, 25, "Quit", CButton::Quit);
-		buttonRestart = new CButton(startX + 200, 260, 80, 25, "Restart", CButton::Restart);
+		buttonNewGame = new CButton(160, 260, 80, 25, "New Game", CButton::NewGame);
+		buttonQuit = new CButton(260, 260, 80, 25, "Quit", CButton::Quit);
+		buttonRestart = new CButton(360, 260, 80, 25, "Restart", CButton::Restart);
 
 		buttonQuit->callback(&MyAppWindow::closeWindow_cb, this);
 		buttonQuit->when(FL_WHEN_RELEASE); // The callback is done after user successfully clicks button, or when shortcut is typed.
@@ -788,7 +662,6 @@ public:
     }
 
 	int handle(int e) {
-        //std::cout << "handle\n" << std::flush;
 		static int offset[2] = { 0, 0 };
         int ret = Fl_Window::handle(e);
         switch ( e ) {
@@ -825,10 +698,8 @@ public:
 
 int _tmain(int argc, _TCHAR* argv[])
 {
-	//std::cout << "Creating window\n" << std::flush;
 	MyAppWindow win(500, 300, "Nim Master");
     win.resizable(win);
     win.show();
-    //std::cout << "Begin run.\n" << std::flush;
 	return(Fl::run());
 }
