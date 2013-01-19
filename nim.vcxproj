@@ -34,8 +34,8 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>J:\My Projects\nim\fltk;$(IncludePath)</IncludePath>
-    <LibraryPath>J:\My Projects\nim\fltk\lib;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(ProjectDir)fltk;$(IncludePath)</IncludePath>
+    <LibraryPath>$(ProjectDir)fltk\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>true</LinkIncremental>
@@ -52,7 +52,7 @@
       <TargetMachine>MachineX86</TargetMachine>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Console</SubSystem>
-      <AdditionalLibraryDirectories>J:\My Projects\nim\fltk\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(ProjectDir)fltk\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>fltkd.lib;ComCtl32.Lib;WSock32.Lib;OpenGL32.Lib;GlU32.Lib;fltkgld.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
