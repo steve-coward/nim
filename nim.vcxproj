@@ -72,12 +72,12 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="nim\nim.cpp" />
-    <ClCompile Include="nim\stdafx.cpp" />
-  </ItemGroup>
-  <ItemGroup>
     <ClInclude Include="nim\stdafx.h" />
     <ClInclude Include="nim\targetver.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="nim.cpp" />
+    <ClCompile Include="stdafx.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
