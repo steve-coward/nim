@@ -6,6 +6,7 @@
 #include <FL/Fl_Button.H>
 #include <FL/glut.h>
 #include <iostream>
+#include <algorithm>
 #include <vector>
 #include <time.h>
 
@@ -325,7 +326,12 @@ public:
 
 		bool bGameOver = isGameOver();
 		if (bGameOver) {
-			std::cout << "Computer loses.\n" << std::flush;
+			if (numTaken > 0) {
+				std::cout << "Computer wins.\n" << std::flush;
+			}
+			else {
+				std::cout << "Computer loses.\n" << std::flush;
+			}
 		}
 		else {
 			std::cout << "Computer removed " << numTaken << " matchsticks from pile " << pileTakenFrom << ".\n" << std::flush;
@@ -363,8 +369,6 @@ public:
 		int i;
 		int numSticks[3];
 
-		m_bComputerWinning = false;
-
 		if (bNewGame) {
 			for (i = 0; i < m_numPiles; i++) {
 				numSticks[i] = (rand() % m_maxMatchSticksPerPile) + 1;
@@ -376,12 +380,14 @@ public:
 				numSticks[i] = m_startPileCount[i];
 			}
 		}
+
+		// To initialize game to known state uncomment lines below.
 		//numSticks[0] = 1;
 		//numSticks[1] = 2;
-		//numSticks[2] = 4;
+		//numSticks[2] = 3;
 		//m_startPileCount[0] = 1;
 		//m_startPileCount[1] = 2;
-		//m_startPileCount[2] = 4;
+		//m_startPileCount[2] = 3;
 
 		Pile1d::iterator itr1d;
 		Pile2d::iterator itr2d;
@@ -401,6 +407,11 @@ public:
 			++itr2di;
 			i++;
 		}
+		
+		
+		// Human plays first, if current nimValue is 0 human will lose.
+		m_bComputerWinning = (calcNimValue() == 0);
+
 		redraw();
 	}
 
@@ -474,10 +485,8 @@ public:
         glOrtho(0,W,H,0,-1,1);
     }
 
-   // DRAW METHOD
-    void draw() {
-         // first time? init
-		//std::cout << "draw\n" << std::flush;
+	void draw() {
+        // if first time, init
 		if (!valid()) {
 			valid(1);
 			FixViewport(w(), h());
@@ -488,35 +497,22 @@ public:
         glClear(GL_COLOR_BUFFER_BIT);
 		glColor3f(1.0, 0.0, 0.0);
 
-		Pile1d::iterator itr1d;
 		Pile2d::iterator itr2d;
 		itr2d = m_piles.begin();
 		while ( itr2d != m_piles.end()) {
-			itr1d = itr2d->begin();
-			while ( itr1d != itr2d->end()) {
-				(*itr1d)->draw();
-				++itr1d;
-			}
+			std::for_each(itr2d->begin(),itr2d->end(), std::mem_fun(&CBox::draw));
 			++itr2d;
 		}
 
 		itr2d = m_removedPiles.begin();
 		while ( itr2d != m_removedPiles.end()) {
-			itr1d = itr2d->begin();
-			while ( itr1d != itr2d->end()) {
-				(*itr1d)->draw();
-				++itr1d;
-			}
+			std::for_each(itr2d->begin(),itr2d->end(), std::mem_fun(&CBox::draw));
 			++itr2d;
 		}
 
 		itr2d = m_unusedPiles.begin();
 		while ( itr2d != m_unusedPiles.end()) {
-			itr1d = itr2d->begin();
-			while ( itr1d != itr2d->end()) {
-				(*itr1d)->draw();
-				++itr1d;
-			}
+			std::for_each(itr2d->begin(),itr2d->end(), std::mem_fun(&CBox::draw));
 			++itr2d;
 		}
 
@@ -564,7 +560,7 @@ public:
 		m_startX = 40;
 		m_startY = 10;
 		
-		srand( time(NULL) );
+		srand( (unsigned int)time(NULL) );
 
 		m_numPiles = 3;
 		m_startPileCount = new int[m_numPiles];
